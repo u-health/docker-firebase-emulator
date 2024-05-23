@@ -8,28 +8,15 @@ error_exit() {
 }
 
 # Sanity checks
-[[ -z "${DATA_DIRECTORY}" ]] && echo "DATA_DIRECTORY environment variable missing, will not export or import data to firebase"
-[[ -z "${FIREBASE_PROJECT}" ]] && error_exit "FIREBASE_PROJECT environment variable missing"
-
-dirs=("/srv/firebase/functions" "/srv/firebase/firestore" "/srv/firebase/storage")
-
-for dir in "${dirs[@]}"; do
-  if [[ -d "$dir" ]]; then
-    echo "Installing npm packages in $dir"
-    npm install --prefix "$dir" || error_exit "npm install failed in $dir"
-  fi
-done
+[[ -z "${DATA_DIRECTORY}" ]] && echo "DATA_DIRECTORY environment variable missing, will not import data to firebase"
+[[ -n "${DATA_EXPORT}" ]] && [[ -z "${DATA_DIRECTORY}" ]] && echo "DATA_EXPORT environment variable is set, but DATA_DIRECTORY is missing, will not export data on exit"
 
 # Start Firebase emulators
-emulator_cmd="firebase emulators:start --project=${FIREBASE_PROJECT}"
-[[ -n "${DATA_DIRECTORY}" ]] && emulator_cmd+=" --import=./${DATA_DIRECTORY}/export --export-on-exit"
+emulator_cmd="firebase emulators:start"
+[[ -n "${DATA_DIRECTORY}" ]] && emulator_cmd+=" --import=./${DATA_DIRECTORY}/export"
+[[ -n "${DATA_EXPORT}" ]] && emulator_cmd+=" --export-on-exit"
 $emulator_cmd &
 firebase_pid=$!
-
-# Start nginx and npm
-echo "Starting nginx..."
-nginx &
-nginx_pid=$!
 
 cleanup() {
     echo "Stopping services..."
@@ -38,14 +25,6 @@ cleanup() {
     if [[ -n "$firebase_pid" ]]; then
         kill -SIGTERM "$firebase_pid" || echo "Failed to terminate Firebase process"
         wait "$firebase_pid" 2>/dev/null
-    fi
-    if [[ -n "$nginx_pid" ]]; then
-        kill -SIGTERM "$nginx_pid" || echo "Failed to terminate Nginx process"
-        wait "$nginx_pid" 2>/dev/null
-    fi
-    if [[ -n "$npm_pid" ]]; then
-        kill -SIGTERM "$npm_pid" || echo "Failed to terminate NPM process"
-        wait "$npm_pid" 2>/dev/null
     fi
 }
 
