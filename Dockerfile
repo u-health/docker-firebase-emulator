@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-ARG FIREBASE_VERSION=13.6.0
+ARG FIREBASE_VERSION=13.29.2
 
 RUN apk --no-cache add openjdk11-jre bash curl openssl gettext nano sudo && \
     npm cache clean --force && \
