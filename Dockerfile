@@ -2,7 +2,7 @@ FROM node:24-alpine
 
 ARG FIREBASE_VERSION=15.3.0
 
-RUN apk --no-cache add openjdk11-jre bash curl openssl gettext nano sudo && \
+RUN apk --no-cache add openjdk21-jre bash curl openssl gettext nano sudo && \
     npm cache clean --force && \
     npm i -g firebase-tools@$FIREBASE_VERSION
 
