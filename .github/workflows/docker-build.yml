@@ -16,7 +16,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  FIREBASE_VERSION: "13.29.2"
+  FIREBASE_VERSION: "15.3.0"
 
 jobs:
   build-and-push-image:
